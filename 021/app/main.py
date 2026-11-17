@@ -148,6 +148,7 @@ async def validate_token(company_id, request, db: Session):
         is_admin = payload["is_admin"]
         company_name = payload["name"]
         
+        # Verify token data matches database record
         company = crud.get_company(db, token_company_id)
         if not company or company.name != company_name or company.is_admin != is_admin:
             raise credentials_exception

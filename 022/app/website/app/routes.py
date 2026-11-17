@@ -25,35 +25,43 @@ def login():
         password = request.form['password']
         user = User.query.filter_by(username=username, password=password).first()
         if user:
+            # Store user ID in session
             session['user_id'] = user.id
+            # If login successful, redirect to home page
             return redirect(url_for('home'))
         else:
+            # If login fails, redirect back to login page with an error message
             return render_template('templates/login.html', error='Invalid username or password')
     return render_template('templates/login.html')
 
 
 @app.route('/logout')
 def logout():
+    # Clear user ID from session
     session.pop('user_id', None)
     return redirect(url_for('login'))
 
 
 @app.route('/home')
 def home():
+    # Retrieve user from session
     user_id = session.get('user_id')
     if user_id:
         user = User.query.get(user_id)
         return render_template('templates/home.html', user=user)
     else:
+        # If user not in session, redirect to login
         return redirect(url_for('login'))
 
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
+    # Retrieve user from session
     user_id = session.get('user_id')
     if user_id:
         user = User.query.get(user_id)
         if request.method == 'POST':
+            # Update user's profile with new values
             user.name = request.form['name']
             user.lastname = request.form['lastname']
             user.email = request.form['email']
@@ -61,19 +69,23 @@ def profile():
             user.loan_term_months = int(request.form['loan_term_months'])
             user.monthly_payment = float(request.form['monthly_payment'])
             db.session.commit()
-            return redirect(url_for('home'))
+            return redirect(url_for('home'))  # Redirect to home page after profile update
         else:
+            # Render profile template with user's information for GET request
             return render_template('templates/profile.html', user=user)
     else:
+        # If user not in session, redirect to login
         return redirect(url_for('login'))
 
 
 @app.route('/update_profile', methods=['GET', 'POST'])
 def update_profile():
+    # Retrieve user from session
     user_id = session.get('user_id')
     if user_id:
         user = User.query.get(user_id)
         if request.method == 'POST':
+            # Update user's profile with new values
             user.name = request.form['name']
             user.lastname = request.form['lastname']
             user.email = request.form['email']
@@ -81,6 +93,7 @@ def update_profile():
             user.loan_term_months = int(request.form['loan_term_months'])
             user.monthly_payment = float(request.form['monthly_payment'])
 
+            # Handle file upload
             if 'image_profile' in request.files:
                 image_profile = request.files['image_profile']
                 if image_profile.filename != '':
@@ -95,6 +108,7 @@ def update_profile():
         return render_template('templates/profile.html', user=user)
 
     else:
+        # If user not in session, redirect to login
         return redirect(url_for('login'))
 
 
@@ -111,23 +125,28 @@ def error():
 
 @app.route('/loan_details')
 def loan_details():
+    # Retrieve user from session
     user_id = session.get('user_id')
     if user_id:
         user = User.query.get(user_id)
         return render_template('templates/loan_details.html', loan_amount=user.loan_amount, 
             loan_term_months=user.loan_term_months, monthly_payment=user.monthly_payment)
     else:
+        # If user not in session, redirect to login
         return redirect(url_for('login'))
 
 
 @app.route('/total_loan_payments')
 def total_loan_payments():
+    # Retrieve user from session
     user_id = session.get('user_id')
     if user_id:
+        # Get payment and term from query parameters
         principal = request.args.get('principal', type=str)
         payment = request.args.get('payment', type=float)
         term = request.args.get('term', type=int)
 
+        # Check if parameters are provided
         if principal is None or payment is None or term is None:
             return Response('Missing principal, payment or term parameters', status=400)
 
@@ -140,4 +159,5 @@ def total_loan_payments():
 
         return Response(json.dumps(loan_data), content_type='application/json')
     else:
+        # If user not in session, redirect to login
         return redirect(url_for('login'))

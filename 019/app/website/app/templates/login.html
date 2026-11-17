@@ -31,7 +31,7 @@
                             </div>
                             <button type="submit" class="btn btn-primary">Login</button>
                         </form>
-                        
+                        <!-- Alert for displaying login errors -->
                         <div id="loginAlert" class="alert alert-danger mt-3 d-none" role="alert">
                             Incorrect username or password. Please try again.
                         </div>
@@ -41,20 +41,26 @@
         </div>
     </div>
 
-    
+    <!-- Bootstrap Bundle with Popper -->
     <script src="/resource?filename=js/bootstrap.bundle.min.js"></script>
     
-    
+    <!-- Custom JavaScript for login form -->
     <script>
+        // Get the form element
         const form = document.getElementById('loginForm');
 
+        // Add event listener to form submission
         form.addEventListener('submit', function(event) {
+            // Prevent the form from submitting
             event.preventDefault();
 
+            // Perform your own validation here if needed
+            // For simplicity, let's just show an alert
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
 
+            // Always display error message
             document.getElementById('loginAlert').classList.remove('d-none');
 
         });

@@ -1,3 +1,4 @@
+# encoding=utf8
 
 from flask import Flask, request, Response, make_response, url_for
 import string
@@ -48,9 +49,9 @@ def validate_submission(page,flag,msg,tag):
         os.unlink(fn)
 
     if msg == "":
-        data = '<div class="solution-text"><img src="{0}" alt="Start" width="150" height="150"><br>Ready when you are.</div>'.format(IMAGE_ROUTES[tag]['start'])
+        data = '<div class="solution-text"><img src="{0}" alt="Start" width="150" height="150"><br>Let the game begin. Good Luck</div>'.format(IMAGE_ROUTES[tag]['start'])
     else:
-        if result == 'MSG':
+        if result == 'XSS':
             data = '<div class="solution-text"><img src="{0}" alt="Correct" width="150" height="150"><br>Congratulations!<p> Here is the flag: {1}</div>'.format(IMAGE_ROUTES[tag]['success'],flag)
         elif result:
             data = '<div class="solution-text"><img src="{0}" alt="Fail" width="150" height="150"><br>Invalid format: {1}</div>'.format(IMAGE_ROUTES[tag]['process'], cgi.escape(result))
@@ -59,8 +60,8 @@ def validate_submission(page,flag,msg,tag):
     return data
 
 
-@app.route('/page25', methods=['POST', 'GET'])
-def page25():
+@app.route('/xss25', methods=['POST', 'GET'])
+def xss25():
     msg = request.form.get('solution','')
     blacklist = ['script', "onload", "onmouseover", "onclick", "onbegin", "onerror", "svg", "'"]
     value =  "" if msg == "" else '> {0}'.format(escape(msg))
@@ -69,14 +70,15 @@ def page25():
         if word in msg.lower():
             error_msg = """<div class="solution-text">Sorry you can't use: '%s'</div>""" % word
             value = ">"
-            return PAGE_CONTENT_POST.format("25","Star",value,"",error_msg)
+            return XSS_CONTENT_POST.format("25","Star",value,"",error_msg)
 
-    data = PAGE_CONTENT_POST.format("25","Star",value, "","")
-    result= check_submission(data,flags[0],msg,'page_medium')
+    data = XSS_CONTENT_POST.format("25","Star",value, "","")
+    result= check_xss(data,flags[0],msg,'xss_medium')
 
-    response = make_response(PAGE_CONTENT_POST.format("25","Star",value, result, ""))
+    response = make_response(XSS_CONTENT_POST.format("25","Star",value, result, ""))
     response.headers["X-XSS-Protection"] = "0"
     return response
 
 if __name__ == '__main__':
+    #app.run(host='0.0.0.0', port=5001, threaded=True)
     app.run(debug=True)

@@ -13,6 +13,7 @@ from passlib.context import CryptContext
 import crud, schemas
 from database import SessionLocal, engine, Base
 
+# Generate a strong secret key and store it as an environment variable
 SECRET_KEY = os.getenv('JWT_SECRET_KEY', secrets.token_urlsafe(64))
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -41,17 +42,20 @@ def verify_password(plain_password, hashed_password):
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     
+    # Set default expiration if not provided
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     
+    # Add standard JWT claims
     to_encode.update({
         "exp": expire,
         "iat": datetime.utcnow(),
         "type": "access"
     })
     
+    # Ensure payload is JSON serializable
     for key in to_encode:
         if isinstance(to_encode[key], datetime):
             to_encode[key] = to_encode[key].timestamp()
@@ -126,6 +130,7 @@ async def login_for_access_token(
         )
     
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    # Include the actual admin status in the token
     access_token = create_access_token(
         data={
             "sub": str(company.id),
@@ -143,8 +148,8 @@ async def login_for_access_token(
         key="access_token",
         value=f"Bearer {access_token}",
         httponly=True,
-        secure=True,
-        samesite="strict"
+        secure=True,  # Only send cookie over HTTPS
+        samesite="strict"  # Protect against CSRF
     )
     return response
 
@@ -163,6 +168,7 @@ def get_current_company(token: str, db: Session):
     )
     
     try:
+        # Validate token and extract payload
         payload = jwt.decode(
             token.split(' ')[1],
             SECRET_KEY,
@@ -173,6 +179,7 @@ def get_current_company(token: str, db: Session):
         if company_id is None:
             raise credentials_exception
             
+        # Get company from database
         company = crud.get_company(db, company_id)
         if company is None:
             raise credentials_exception
@@ -200,14 +207,17 @@ async def show_jobs(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    # Get current company from token
     current = get_current_company(token, db)
     
+    # Check authorization
     if current["company"].id != company_id and not current["is_admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to view these jobs"
         )
 
+    # Get jobs based on permissions
     include_private = current["is_admin"]
     jobs = crud.get_jobs(db, company_id=company_id, private=include_private)
 
@@ -241,8 +251,10 @@ async def edit_profile(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    # Get current company from token
     current = get_current_company(token, db)
     
+    # Check authorization
     if current["company"].id != company_id and not current["is_admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -277,14 +289,17 @@ async def update_profile(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    # Get current company from token
     current = get_current_company(token, db)
     
+    # Check authorization
     if current["company"].id != company_id and not current["is_admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to edit this profile"
         )
         
+    # Only admins can set admin status
     if is_admin and not current["is_admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

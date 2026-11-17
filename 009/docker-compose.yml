@@ -1,7 +1,7 @@
 services:
   web:
     build:
-      context: ./web-app
+      context: ./vulnerable-app
     ports:
       - "8000"
     healthcheck:

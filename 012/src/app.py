@@ -1,3 +1,4 @@
+# encoding=utf8
 
 from flask import Flask, request, Response, make_response, url_for
 import string
@@ -47,18 +48,18 @@ def validate_user_content(page,flag,msg,tag):
         os.unlink(fn)
 
     if msg == "":
-        data = '<div class="solution-text"><img src="{0}" alt="Start" width="150" height="150"><br>Ready when you are.</div>'.format(IMAGE_ROUTES[tag]['start'])
+        data = '<div class="solution-text"><img src="{0}" alt="Start" width="150" height="150"><br>Let the game begin. Good Luck</div>'.format(IMAGE_ROUTES[tag]['start'])
     else:
-        if result == 'MSG':
+        if result == 'XSS':
             data = '<div class="solution-text"><img src="{0}" alt="Correct" width="150" height="150"><br>Congratulations!<p> Here is the flag: {1}</div>'.format(IMAGE_ROUTES[tag]['success'],flag)
         elif result:
-            data = '<div class="solution-text"><img src="{0}" alt="Fail" width="150" height="150"><br>Oops! Unexpected result: {1}</div>'.format(IMAGE_ROUTES[tag]['process'], cgi.escape(result))
+            data = '<div class="solution-text"><img src="{0}" alt="Fail" width="150" height="150"><br>Oops! You did an alert with {1} instead of "XSS"</div>'.format(IMAGE_ROUTES[tag]['process'], cgi.escape(result))
         else:
             data = '<div class="solution-text"><img src="{0}" alt="Fail" width="150" height="150"><br>Failed! Try again!</div>'.format(IMAGE_ROUTES[tag]['error'])
     return data
 
 
-@app.route('/page11')
+@app.route('/xss11')
 def process_input():
     msg = request.args.get('name','')
     msg = re.sub(r'[^a-zA-Z0-9\s\.,!?-]', '', msg)
@@ -67,9 +68,10 @@ def process_input():
     msg = re.sub(r'&#x?[0-9a-fA-F]+;', '', msg, flags=re.IGNORECASE)
     value = "" if msg == "" else 'value="{0}"'.format(msg)
 
-    data = PAGE_CONTENT.format("11", "Triangle", value, "", "")
-    result = check_submission(data,flags[0],msg,'page_easy_med')
-    return PAGE_CONTENT.format("11", "Triangle", value, result, "")
+    data = XSS_CONTENT.format("11", "Triangle", value, "", "")
+    result = check_xss(data,flags[0],msg,'xss_easy_med')
+    return XSS_CONTENT.format("11", "Triangle", value, result, "")
 
 if __name__ == '__main__':
+    #app.run(host='0.0.0.0', port=5001, threaded=True)
     app.run(debug=True)

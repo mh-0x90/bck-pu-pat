@@ -17,6 +17,7 @@
     function viewPrescriptions() {
         
 
+        // dont pass flag in query parameter because it will fetched
         fetch('/graphql', {
             method: 'POST',
             headers: {

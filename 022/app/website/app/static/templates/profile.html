@@ -37,14 +37,14 @@
                         <label for="monthly_payment" class="form-label">Monthly Payment:</label>
                         <input type="text" class="form-control" id="monthly_payment" name="monthly_payment" value="{{ user.monthly_payment }}" required>
                     </div>
-                    
+                    <!-- New input for uploading profile image -->
                     <div class="mb-3">
                         <label for="image_profile_filename" class="form-label">Image Profile:</label>
                         <input type="file" class="form-control" id="profile_image" name="image_profile" style="opacity:0;height:0;">
                     
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="text_input_span_id">Select Image</span>
-                            
+                            <!-- use 'caret-color: transparent' to hide input cursor, set autocomplete to off to remove possible input hint -->
                             <input type="text" id='text_input_id' class="form-control" placeholder="{{ user.image_profile_filename }}" style="caret-color: transparent" autocomplete="off">
                         </div>
                     </div>
@@ -64,7 +64,7 @@
                         </ul>
                     </div>
                 </div>
-                
+                <!-- Profile Image Section -->
                 <div class="card mt-3">
                     <div class="card-body">
                         <h5 class="card-title">Profile Image</h5>
@@ -75,21 +75,24 @@
         </div>
     </div>
 
-    
+    <!-- use online jQuery -->
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <script>
+    // bind file-input-form click action to text-input-span
     $('#text_input_span_id').click(function () {
         $("#profile_image").trigger('click');
     })
+    // bind file-input-form click action to text-input-form
     $('#text_input_id').click(function () {
         $("#profile_image").trigger('click');
     })
+    // display file name in text-input-form    
     $("#profile_image").change(function () {            
         $('#text_input_id').val(this.value.replace(/C:\\fakepath\\/i, ''))
     })
     </script>
 
-    
+    <!-- Bootstrap Bundle with Popper -->
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
 </body>
 </html>
